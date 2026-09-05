@@ -8,6 +8,8 @@ class ApplicantMapper {
     required String cognome,
     required String residenza,
     required GeographicArea area,
+    required String regione,
+    required String provincia,
     required DateTime dataNascita,
     required String nazionalita,
     required int anniItalia,
@@ -27,6 +29,8 @@ class ApplicantMapper {
       residenza: residenza,
 
       area: area,
+      regione: regione,
+      provincia: provincia,
 
       dataNascita: dataNascita,
 

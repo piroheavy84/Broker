@@ -120,7 +120,7 @@ class ApplicantCard extends StatelessWidget {
 
               decoration: const InputDecoration(
 
-                labelText: "Figli a carico",
+                labelText: "Persone a carico",
 
               ),
 

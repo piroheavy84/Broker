@@ -33,6 +33,27 @@ class PracticeNotifier extends StateNotifier<Practice> {
     );
   }
 
+  void updateApplicant(int index, Applicant applicant) {
+    final lista = [...state.richiedenti];
+
+    if (index >= 0 && index < lista.length) {
+      lista[index] = applicant;
+    } else if (index == lista.length) {
+      lista.add(applicant);
+    } else {
+      return;
+    }
+
+    state = Practice(
+      id: state.id,
+      dataCreazione: state.dataCreazione,
+      richiedenti: lista,
+      mortgage: state.mortgage,
+      debts: state.debts,
+      note: state.note,
+    );
+  }
+
   void removeApplicant(int index) {
     final lista = [...state.richiedenti];
     lista.removeAt(index);

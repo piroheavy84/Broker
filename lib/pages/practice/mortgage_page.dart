@@ -6,269 +6,260 @@ import '../../providers/practice_provider.dart';
 import 'debts_page.dart';
 
 class MortgagePage extends ConsumerStatefulWidget {
-
   const MortgagePage({super.key});
 
   @override
-  ConsumerState<MortgagePage> createState() =>
-      _MortgagePageState();
-
+  ConsumerState<MortgagePage> createState() => _MortgagePageState();
 }
 
-class _MortgagePageState
-    extends ConsumerState<MortgagePage> {
+class _MortgagePageState extends ConsumerState<MortgagePage> {
+  final valoreController = TextEditingController();
+  final valorePeriziaController = TextEditingController();
+  final importoController = TextEditingController();
+  final durataController = TextEditingController();
+  final polizzaVitaController = TextEditingController();
+  final polizzaLavoroController = TextEditingController();
+  final polizzaVitaLavoroController = TextEditingController();
+  final polizzaScoppioIncendioController = TextEditingController();
+  final polizzaScoppioIncendioCompensoController = TextEditingController();
 
-  final valoreController =
-      TextEditingController();
+  bool polizzaVitaRateizzata = false;
+  bool polizzaLavoroRateizzata = false;
+  bool polizzaVitaLavoroRateizzata = false;
 
-  final importoController =
-      TextEditingController();
-
-  final durataController =
-      TextEditingController();
-
-  final irsController =
-      TextEditingController();
-
-  final euriborController =
-      TextEditingController();
-
-  String finalita =
-      "Acquisto Prima Casa";
-
-  String tipologia =
-      "Prima Casa";
-
-  String classe =
-      "A4";
-
-  String tipoTasso =
-      "Fisso";
+  String finalita = "Acquisto Prima Casa";
+  String tipologia = "Prima Casa";
+  String classe = "A4";
+  String tipoTasso = "Fisso";
 
   DateTime? dataRogito;
 
+  MortgagePurpose _purposeFromLabel(String value) {
+    switch (value) {
+      case "Acquisto Prima Casa":
+        return MortgagePurpose.acquistoPrimaCasa;
+      case "Acquisto Seconda Casa":
+        return MortgagePurpose.acquistoSecondaCasa;
+      case "Acquisto + Ristrutturazione":
+        return MortgagePurpose.acquistoRistrutturazione;
+      case "Sostituzione":
+        return MortgagePurpose.sostituzione;
+      case "Sostituzione + Ristrutturazione":
+        return MortgagePurpose.sostituzioneRistrutturazione;
+      case "Surroga":
+        return MortgagePurpose.surroga;
+      case "Rifinanziamento":
+        return MortgagePurpose.rifinanziamento;
+      case "Liquidità":
+        return MortgagePurpose.liquidita;
+      case "Ristrutturazione":
+        return MortgagePurpose.ristrutturazione;
+      case "Costruzione":
+        return MortgagePurpose.costruzione;
+      case "Consolidamento Debiti":
+        return MortgagePurpose.consolidamentoDebiti;
+      case "Dismissioni Enasarco":
+        return MortgagePurpose.dismissioniEnasarco;
+      default:
+        return MortgagePurpose.acquistoPrimaCasa;
+    }
+  }
+
   Future<void> scegliData() async {
-
-    final data =
-        await showDatePicker(
-
+    final data = await showDatePicker(
       context: context,
-
-      initialDate:
-          DateTime.now(),
-
-      firstDate:
-          DateTime.now(),
-
-      lastDate:
-          DateTime(2035),
-
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2035),
     );
 
     if (data != null) {
-
       setState(() {
-
         dataRogito = data;
-
       });
-
     }
-
   }
 
   @override
   void dispose() {
-
     valoreController.dispose();
-
+    valorePeriziaController.dispose();
     importoController.dispose();
-
     durataController.dispose();
-
-    irsController.dispose();
-
-    euriborController.dispose();
+    polizzaVitaController.dispose();
+    polizzaLavoroController.dispose();
+    polizzaVitaLavoroController.dispose();
+    polizzaScoppioIncendioController.dispose();
+    polizzaScoppioIncendioCompensoController.dispose();
 
     super.dispose();
+  }
 
+  double euroValue(TextEditingController controller) {
+    return double.tryParse(controller.text.replaceAll(",", ".")) ?? 0;
+  }
+
+  Widget polizzaField({
+    required String title,
+    required TextEditingController controller,
+    required bool rateizzata,
+    required ValueChanged<bool> onRateizzataChanged,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Premio / costo cliente (€)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text("Premio rateizzato"),
+              subtitle: Text(
+                rateizzata
+                    ? "Provvigione calcolata su importo mutuo"
+                    : "Provvigione calcolata sul premio inserito",
+              ),
+              value: rateizzata,
+              onChanged: onRateizzataChanged,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
-
-        title: const Text(
-          "Immobile e Mutuo",
-        ),
-
+        title: const Text("Immobile e Mutuo"),
       ),
-
       body: ListView(
-
-        padding:
-            const EdgeInsets.all(20),
-
+        padding: const EdgeInsets.all(20),
         children: [
-
           const Text(
-
             "DATI IMMOBILE E MUTUO",
-
             style: TextStyle(
-
               fontSize: 22,
-
-              fontWeight:
-                  FontWeight.bold,
-
+              fontWeight: FontWeight.bold,
             ),
-
           ),
 
           const SizedBox(height: 20),
 
           DropdownButtonFormField<String>(
-
             value: finalita,
-
-            decoration:
-                const InputDecoration(
-
+            decoration: const InputDecoration(
               labelText: "Finalità",
-
             ),
-
             items: const [
-
               DropdownMenuItem(
-                value:
-                    "Acquisto Prima Casa",
-                child: Text(
-                    "Acquisto Prima Casa"),
+                value: "Acquisto Prima Casa",
+                child: Text("Acquisto Prima Casa"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Acquisto Seconda Casa",
-                child: Text(
-                    "Acquisto Seconda Casa"),
+                value: "Acquisto Seconda Casa",
+                child: Text("Acquisto Seconda Casa"),
               ),
-
+              DropdownMenuItem(
+                value: "Acquisto + Ristrutturazione",
+                child: Text("Acquisto + Ristrutturazione"),
+              ),
+              DropdownMenuItem(
+                value: "Sostituzione",
+                child: Text("Sostituzione"),
+              ),
+              DropdownMenuItem(
+                value: "Sostituzione + Ristrutturazione",
+                child: Text("Sostituzione + Ristrutturazione"),
+              ),
               DropdownMenuItem(
                 value: "Surroga",
                 child: Text("Surroga"),
               ),
-
+              DropdownMenuItem(
+                value: "Rifinanziamento",
+                child: Text("Rifinanziamento"),
+              ),
               DropdownMenuItem(
                 value: "Liquidità",
-                child:
-                    Text("Liquidità"),
+                child: Text("Liquidità"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Ristrutturazione",
-                child: Text(
-                    "Ristrutturazione"),
+                value: "Ristrutturazione",
+                child: Text("Ristrutturazione"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Costruzione",
-                child:
-                    Text("Costruzione"),
+                value: "Costruzione",
+                child: Text("Costruzione"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Consolidamento Debiti",
-                child: Text(
-                    "Consolidamento Debiti"),
+                value: "Consolidamento Debiti",
+                child: Text("Consolidamento Debiti"),
               ),
-
+              DropdownMenuItem(
+                value: "Dismissioni Enasarco",
+                child: Text("Dismissioni Enasarco"),
+              ),
             ],
-
             onChanged: (v) {
-
               setState(() {
-
                 finalita = v!;
-
               });
-
             },
-
           ),
 
           const SizedBox(height: 15),
 
           DropdownButtonFormField<String>(
-
             value: tipologia,
-
-            decoration:
-                const InputDecoration(
-
-              labelText:
-                  "Tipologia immobile",
-
+            decoration: const InputDecoration(
+              labelText: "Tipologia immobile",
             ),
-
             items: const [
-
               DropdownMenuItem(
-                value:
-                    "Prima Casa",
-                child:
-                    Text("Prima Casa"),
+                value: "Prima Casa",
+                child: Text("Prima Casa"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Seconda Casa",
-                child: Text(
-                    "Seconda Casa"),
+                value: "Seconda Casa",
+                child: Text("Seconda Casa"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Commerciale",
-                child:
-                    Text("Commerciale"),
+                value: "Commerciale",
+                child: Text("Commerciale"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Terreno",
-                child:
-                    Text("Terreno"),
+                value: "Terreno",
+                child: Text("Terreno"),
               ),
-
               DropdownMenuItem(
-                value:
-                    "Nessun Immobile",
-                child: Text(
-                    "Nessun Immobile"),
+                value: "Nessun Immobile",
+                child: Text("Nessun Immobile"),
               ),
-
             ],
-
             onChanged: (v) {
-
               setState(() {
-
                 tipologia = v!;
-
               });
-
             },
-
           ),
-                    const SizedBox(height: 15),
+
+          const SizedBox(height: 15),
 
           DropdownButtonFormField<String>(
             value: classe,
@@ -301,6 +292,17 @@ class _MortgagePageState
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: "Valore commerciale immobile (€)",
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          TextField(
+            controller: valorePeriziaController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: "Valore perizia (€) - opzionale",
+              helperText: "Serve per verificare eventuali prodotti LTC.",
             ),
           ),
 
@@ -350,23 +352,14 @@ class _MortgagePageState
 
           const SizedBox(height: 15),
 
-          if (tipoTasso == "Fisso")
-            TextField(
-              controller: irsController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "IRS (%)",
-              ),
+          Text(
+            tipoTasso == "Fisso"
+                ? "IRS calcolato automaticamente dalla tabella EURIRS."
+                : "Euribor calcolato automaticamente dalla tabella EURIBOR.",
+            style: const TextStyle(
+              fontStyle: FontStyle.italic,
             ),
-
-          if (tipoTasso == "Variabile")
-            TextField(
-              controller: euriborController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "EURIBOR 3M (%)",
-              ),
-            ),
+          ),
 
           const SizedBox(height: 15),
 
@@ -387,25 +380,12 @@ class _MortgagePageState
 
           const SizedBox(height: 30),
 
+          const SizedBox(height: 30),
+
           ElevatedButton(
             onPressed: () {
-
               final mortgage = Mortgage(
-
-                finalita: finalita == "Acquisto Prima Casa"
-                    ? MortgagePurpose.acquistoPrimaCasa
-                    : finalita == "Acquisto Seconda Casa"
-                        ? MortgagePurpose.acquistoSecondaCasa
-                        : finalita == "Surroga"
-                            ? MortgagePurpose.surroga
-                            : finalita == "Liquidità"
-                                ? MortgagePurpose.liquidita
-                                : finalita == "Ristrutturazione"
-                                    ? MortgagePurpose.ristrutturazione
-                                    : finalita == "Costruzione"
-                                        ? MortgagePurpose.costruzione
-                                        : MortgagePurpose.consolidamentoDebiti,
-
+                finalita: _purposeFromLabel(finalita),
                 tipologia: tipologia == "Prima Casa"
                     ? PropertyType.primaCasa
                     : tipologia == "Seconda Casa"
@@ -415,39 +395,38 @@ class _MortgagePageState
                             : tipologia == "Terreno"
                                 ? PropertyType.terreno
                                 : PropertyType.nessunImmobile,
-
                 classeEnergetica: classe,
-
                 valoreImmobile: double.tryParse(
-                        valoreController.text.replaceAll(",", ".")) ??
+                      valoreController.text.replaceAll(",", "."),
+                    ) ??
                     0,
-
+                valorePerizia: valorePeriziaController.text.trim().isEmpty
+                    ? null
+                    : double.tryParse(
+                        valorePeriziaController.text.replaceAll(",", "."),
+                      ),
                 importoRichiesto: double.tryParse(
-                        importoController.text.replaceAll(",", ".")) ??
+                      importoController.text.replaceAll(",", "."),
+                    ) ??
                     0,
-
-                durata:
-                    int.tryParse(durataController.text) ?? 0,
-
+                durata: int.tryParse(durataController.text) ?? 0,
                 tipoTasso: tipoTasso == "Fisso"
                     ? MortgageRateType.fisso
                     : MortgageRateType.variabile,
-
-                irs: double.tryParse(
-                        irsController.text.replaceAll(",", ".")) ??
-                    0,
-
-                euribor: double.tryParse(
-                        euriborController.text.replaceAll(",", ".")) ??
-                    0,
-
+                irs: 0,
+                euribor: 0,
                 dataRogito: dataRogito,
-
+                polizzaVitaEuro: euroValue(polizzaVitaController),
+                polizzaVitaRateizzata: polizzaVitaRateizzata,
+                polizzaLavoroEuro: euroValue(polizzaLavoroController),
+                polizzaLavoroRateizzata: polizzaLavoroRateizzata,
+                polizzaVitaLavoroEuro: euroValue(polizzaVitaLavoroController),
+                polizzaVitaLavoroRateizzata: polizzaVitaLavoroRateizzata,
+                polizzaScoppioIncendioEuro: euroValue(polizzaScoppioIncendioController),
+                polizzaScoppioIncendioCompensoEuro: euroValue(polizzaScoppioIncendioCompensoController),
               );
 
-              ref
-                  .read(practiceProvider.notifier)
-                  .setMortgage(mortgage);
+              ref.read(practiceProvider.notifier).setMortgage(mortgage);
 
               Navigator.push(
                 context,
@@ -455,23 +434,11 @@ class _MortgagePageState
                   builder: (_) => const DebtsPage(),
                 ),
               );
-
             },
-
-            child: const Text(
-              "Continua",
-            ),
-
+            child: const Text("Continua"),
           ),
-
         ],
-
-      
-
-    ),
-
-  );
-
-}
-
+      ),
+    );
+  }
 }

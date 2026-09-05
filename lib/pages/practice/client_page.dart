@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/applicant.dart';
+import '../../data/italian_geography.dart';
 import '../../providers/practice_provider.dart';
 import 'mortgage_page.dart';
 
@@ -28,7 +29,13 @@ class _ClientPageState extends ConsumerState<ClientPage> {
 
   final figliController = TextEditingController();
 
-  String area = "Nord";
+  String? area;
+
+  String? regione;
+
+  String? provincia;
+
+  String? tipoCentro;
 
   String nazionalita = "Italiana";
 
@@ -144,55 +151,73 @@ class _ClientPageState extends ConsumerState<ClientPage> {
           const SizedBox(height: 15),
 
           DropdownButtonFormField<String>(
-
             value: area,
-
             decoration: const InputDecoration(
-
               labelText: "Area geografica",
-
             ),
-
             items: const [
-
-              DropdownMenuItem(
-
-                value: "Nord",
-
-                child: Text("Nord"),
-
-              ),
-
-              DropdownMenuItem(
-
-                value: "Centro",
-
-                child: Text("Centro"),
-
-              ),
-
-              DropdownMenuItem(
-
-                value: "Sud",
-
-                child: Text("Sud"),
-
-              ),
-
+              DropdownMenuItem(value: "Nord", child: Text("Nord")),
+              DropdownMenuItem(value: "Centro", child: Text("Centro")),
+              DropdownMenuItem(value: "Sud", child: Text("Sud")),
             ],
-
-            onChanged: (v) {
-
-              setState(() {
-
-                area = v!;
-
-              });
-
-            },
-
+            onChanged: (v) => setState(() => area = v),
           ),
-                    const SizedBox(height: 15),
+
+          const SizedBox(height: 15),
+
+          DropdownButtonFormField<String>(
+            value: regione,
+            decoration: const InputDecoration(
+              labelText: "Regione",
+            ),
+            items: ItalianGeography.regions
+                .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                .toList(),
+            onChanged: (v) {
+              setState(() {
+                regione = v;
+                provincia = null;
+                if (v != null) {
+                  area = ItalianGeography.areaByRegion[v] ?? area;
+                }
+              });
+            },
+          ),
+
+          const SizedBox(height: 15),
+
+          DropdownButtonFormField<String>(
+            value: provincia,
+            decoration: const InputDecoration(
+              labelText: "Provincia",
+            ),
+            items: regione == null
+                ? const []
+                : ItalianGeography.provinces(regione!)
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+            onChanged: regione == null
+                ? null
+                : (v) => setState(() => provincia = v),
+          ),
+
+          const SizedBox(height: 15),
+
+          DropdownButtonFormField<String>(
+            value: tipoCentro,
+            decoration: const InputDecoration(
+              labelText: "Tipologia centro",
+              helperText: "Usata solo dalle banche che distinguono Metropoli, Grande Centro e Piccolo Centro.",
+            ),
+            items: const [
+              DropdownMenuItem(value: "METROPOLI", child: Text("Metropoli")),
+              DropdownMenuItem(value: "GRANDE_CENTRO", child: Text("Grande Centro")),
+              DropdownMenuItem(value: "PICCOLO_CENTRO", child: Text("Piccolo Centro")),
+            ],
+            onChanged: (v) => setState(() => tipoCentro = v),
+          ),
+
+          const SizedBox(height: 15),
 
           InkWell(
 
@@ -450,7 +475,7 @@ class _ClientPageState extends ConsumerState<ClientPage> {
 
             decoration: const InputDecoration(
 
-              labelText: "Figli a carico",
+              labelText: "Persone a carico",
 
             ),
 
@@ -461,11 +486,30 @@ class _ClientPageState extends ConsumerState<ClientPage> {
 
             onPressed: () {
 
+              final nome = nomeController.text.trim();
+              final cognome = cognomeController.text.trim();
+
+              if (nome.isEmpty || cognome.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Nome e cognome sono obbligatori.")),
+                );
+                return;
+              }
+
+              if (area == null || regione == null || provincia == null || tipoCentro == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Area geografica, Regione, Provincia e Tipologia centro sono obbligatorie."),
+                  ),
+                );
+                return;
+              }
+
               final applicant = Applicant(
 
-                nome: nomeController.text,
+                nome: nome,
 
-                cognome: cognomeController.text,
+                cognome: cognome,
 
                 residenza: residenzaController.text,
 
@@ -474,6 +518,12 @@ class _ClientPageState extends ConsumerState<ClientPage> {
                     : area == "Centro"
                         ? GeographicArea.centro
                         : GeographicArea.sud,
+
+                regione: regione!,
+
+                provincia: provincia!,
+
+                tipoCentro: tipoCentro!,
 
                 dataNascita:
                     dataNascita ?? DateTime(1990, 1, 1),
@@ -510,9 +560,20 @@ class _ClientPageState extends ConsumerState<ClientPage> {
 
               );
 
-              ref
-                  .read(practiceProvider.notifier)
-                  .addApplicant(applicant);
+              final notifier =
+                  ref.read(practiceProvider.notifier);
+              final praticaCorrente =
+                  ref.read(practiceProvider);
+
+              // Questa schermata rappresenta Richiedente 1.
+              // Se si torna indietro da Mutuo/Debiti e si preme di nuovo
+              // Continua, aggiorniamo il richiedente esistente invece di
+              // aggiungerne una copia.
+              if (praticaCorrente.richiedenti.isEmpty) {
+                notifier.addApplicant(applicant);
+              } else {
+                notifier.updateApplicant(0, applicant);
+              }
 
               Navigator.push(
 

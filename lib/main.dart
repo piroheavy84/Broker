@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'pages/home/home_page.dart';
 
 void main() {
-  runApp(const KironBrokerEngine());
+  runApp(
+    const ProviderScope(
+      child: KironBrokerEngine(),
+    ),
+  );
 }
 
 class KironBrokerEngine extends StatelessWidget {

@@ -16,6 +16,9 @@ class Applicant {
   final String cognome;
   final String residenza;
   final GeographicArea area;
+  final String regione;
+  final String provincia;
+  final String tipoCentro;
   final DateTime dataNascita;
   final String nazionalita;
   final int anniItalia;
@@ -29,6 +32,9 @@ class Applicant {
     required this.cognome,
     required this.residenza,
     required this.area,
+    required this.regione,
+    required this.provincia,
+    this.tipoCentro = "",
     required this.dataNascita,
     required this.nazionalita,
     required this.anniItalia,
@@ -43,6 +49,9 @@ class Applicant {
     String? cognome,
     String? residenza,
     GeographicArea? area,
+    String? regione,
+    String? provincia,
+    String? tipoCentro,
     DateTime? dataNascita,
     String? nazionalita,
     int? anniItalia,
@@ -56,6 +65,9 @@ class Applicant {
       cognome: cognome ?? this.cognome,
       residenza: residenza ?? this.residenza,
       area: area ?? this.area,
+      regione: regione ?? this.regione,
+      provincia: provincia ?? this.provincia,
+      tipoCentro: tipoCentro ?? this.tipoCentro,
       dataNascita: dataNascita ?? this.dataNascita,
       nazionalita: nazionalita ?? this.nazionalita,
       anniItalia: anniItalia ?? this.anniItalia,
@@ -72,6 +84,9 @@ class Applicant {
       "cognome": cognome,
       "residenza": residenza,
       "area": area.name,
+      "regione": regione,
+      "provincia": provincia,
+      "tipo_centro": tipoCentro,
       "dataNascita": dataNascita.toIso8601String(),
       "nazionalita": nazionalita,
       "anniItalia": anniItalia,
@@ -79,6 +94,7 @@ class Applicant {
       "contratto": contratto.name,
       "reddito": reddito,
       "figli": figli,
+      "persone_a_carico": figli,
     };
   }
 
@@ -90,6 +106,9 @@ class Applicant {
       area: GeographicArea.values.firstWhere(
         (e) => e.name == json["area"],
       ),
+      regione: (json["regione"] ?? "").toString(),
+      provincia: (json["provincia"] ?? "").toString(),
+      tipoCentro: (json["tipo_centro"] ?? json["tipoCentro"] ?? "").toString(),
       dataNascita: DateTime.parse(json["dataNascita"]),
       nazionalita: json["nazionalita"],
       anniItalia: json["anniItalia"],

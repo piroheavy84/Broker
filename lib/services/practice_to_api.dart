@@ -9,36 +9,10 @@ class PracticeToApi {
 
     final mortgage = pratica.mortgage;
 
-    String finalita = "ACQUISTO";
+    final String finalita = mortgage.finalita.normalizedCode;
 
-    switch (mortgage.finalita) {
-
-      case MortgagePurpose.acquistoPrimaCasa:
-      case MortgagePurpose.acquistoSecondaCasa:
-        finalita = "ACQUISTO";
-        break;
-
-      case MortgagePurpose.surroga:
-        finalita = "SURROGA";
-        break;
-
-      case MortgagePurpose.liquidita:
-        finalita = "LIQUIDITA";
-        break;
-
-      case MortgagePurpose.ristrutturazione:
-        finalita = "RISTRUTTURAZIONE";
-        break;
-
-      case MortgagePurpose.costruzione:
-        finalita = "COSTRUZIONE";
-        break;
-
-      case MortgagePurpose.consolidamentoDebiti:
-        finalita = "CONSOLIDAMENTO";
-        break;
-
-    }
+    final String tipologiaImmobile =
+        mortgage.tipologia.normalizedCode;
 
     String tasso = "FISSO";
 
@@ -54,9 +28,16 @@ class PracticeToApi {
 
     }
 
+    final redditoMensile = pratica.richiedenti.fold<double>(
+      0,
+      (totale, richiedente) => totale + richiedente.reddito,
+    );
+
     return {
 
       "finalita": finalita,
+
+      "tipologia_immobile": tipologiaImmobile,
 
       "tasso": tasso,
 
@@ -65,6 +46,14 @@ class PracticeToApi {
       "importo": mortgage.importoRichiesto,
 
       "valore": mortgage.valoreImmobile,
+
+      "valore_perizia": mortgage.valorePerizia,
+
+      "classe_energetica": mortgage.classeEnergetica,
+
+      "reddito_mensile": redditoMensile,
+
+      "data_rogito": mortgage.dataRogito?.toIso8601String() ?? "",
 
     };
 
