@@ -20,9 +20,6 @@ jobs:
           fetch-depth: 0
       - name: Apply UI patch
         run: python tools/apply_commercial_discount_ui.py
-      - name: Format and analyze changed Dart file
-        run: |
-          dart format lib/pages/practice/results_page.dart
       - name: Commit generated changes
         run: |
           if git diff --quiet -- lib/pages/practice/results_page.dart; then
