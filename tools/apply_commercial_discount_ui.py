@@ -79,3 +79,4 @@ text = text.replace(old_spread, new_spread, 1)
 
 PATH.write_text(text, encoding="utf-8")
 print("results_page.dart aggiornato con dettaglio scontistiche")
+# Trigger workflow dopo aggiornamento della pipeline.
