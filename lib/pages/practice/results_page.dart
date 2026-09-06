@@ -1547,7 +1547,9 @@ class _ResultsPageState extends State<ResultsPage> {
                 Text("Massimo finanziabile LTC: € ${(r["massimo_finanziabile_ltc"] as num).toStringAsFixed(2)}"),
               if (r["pagina_regola_ltc"] != null)
                 Text("Riferimento regola LTC: pag. ${r["pagina_regola_ltc"]}"),
-              if (r["motivo_prodotto_speciale"] != null)
+              if (r["motivo_prodotto_speciale"] != null &&
+                  !(r["sconti_applicati"] is List &&
+                      (r["sconti_applicati"] as List).isNotEmpty))
                 Text("Nota: ${r["motivo_prodotto_speciale"]}"),
             ],
             Text("Listino: ${r["listino"]}"),
@@ -1560,17 +1562,48 @@ class _ResultsPageState extends State<ResultsPage> {
             Text(
               "LTV massimo: ${r["ltv_massimo"]}%",
             ),
-            Text(
-              "Spread: ${(r["spread"] as num).toStringAsFixed(2)}%",
-            ),
-            if (r["prodotto_speciale"] == true && r["spread_base"] != null)
-              Text("Spread base: ${r["spread_base"]}"),
-            if (r["prodotto_speciale"] == true && r["spread_delta"] is num)
+            if (r["sconti_applicati"] is List &&
+                (r["sconti_applicati"] as List).isNotEmpty) ...[
               Text(
-                (r["spread_delta"] as num) < 0
-                    ? "Sconto: ${(r["spread_delta"] as num).toStringAsFixed(2)}%"
-                    : "Maggiorazione: +${(r["spread_delta"] as num).toStringAsFixed(2)}%",
+                "Spread base: ${((r["spread_base_commerciale"] ?? r["spread_base"] ?? r["spread"]) as num).toStringAsFixed(2)}%",
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
+              const SizedBox(height: 3),
+              for (final rawSconto in r["sconti_applicati"] as List)
+                if (rawSconto is Map)
+                  Text(
+                    "${rawSconto["label"] ?? "Sconto"}: -${((rawSconto["percentuale"] ?? 0) as num).toStringAsFixed(2)}%",
+                  ),
+              const SizedBox(height: 3),
+              Text(
+                "Sconto totale: -${((r["sconto_totale_percentuale"] ?? 0) as num).toStringAsFixed(2)}%",
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                "Nuovo spread: ${(r["spread"] as num).toStringAsFixed(2)}%",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              if (r["reddito_residuo_sconti"] is num)
+                Text(
+                  "Residuo reddituale per sconto MRI: € ${(r["reddito_residuo_sconti"] as num).toStringAsFixed(2)}",
+                  style: const TextStyle(fontSize: 12),
+                ),
+            ] else ...[
+              Text(
+                "Spread: ${(r["spread"] as num).toStringAsFixed(2)}%",
+              ),
+              if (r["prodotto_speciale"] == true && r["spread_base"] != null)
+                Text("Spread base: ${r["spread_base"]}"),
+              if (r["prodotto_speciale"] == true && r["spread_delta"] is num)
+                Text(
+                  (r["spread_delta"] as num) < 0
+                      ? "Sconto: ${(r["spread_delta"] as num).toStringAsFixed(2)}%"
+                      : "Maggiorazione: +${(r["spread_delta"] as num).toStringAsFixed(2)}%",
+                ),
+            ],
             Text(
               "Indice: ${(r["indice"] as num).toStringAsFixed(2)}%",
             ),
