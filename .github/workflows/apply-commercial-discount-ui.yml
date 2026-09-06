@@ -1,0 +1,36 @@
+name: Apply commercial discount UI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - tools/apply_commercial_discount_ui.py
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply UI patch
+        run: python tools/apply_commercial_discount_ui.py
+      - name: Format and analyze changed Dart file
+        run: |
+          dart format lib/pages/practice/results_page.dart
+      - name: Commit generated changes
+        run: |
+          if git diff --quiet -- lib/pages/practice/results_page.dart; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/pages/practice/results_page.dart
+          git commit -m "Mostra dettaglio sconti e spread finale nei risultati"
+          git push origin HEAD:main
